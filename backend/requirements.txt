@@ -1,0 +1,5 @@
+fastapi[All]
+msal
+PyJWT
+pydantic-settings
+semantic-kernel
