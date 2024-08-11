@@ -3,3 +3,7 @@ msal
 PyJWT
 pydantic-settings
 semantic-kernel
+azure-identity
+msgraph-sdk
+azure-mgmt-resource
+tiktoken

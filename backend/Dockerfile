@@ -10,4 +10,6 @@ RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
 
 COPY ./src /code/app
 
+COPY runclitest.sh /code/runclitest.sh
+
 CMD ["fastapi", "run", "app/main.py", "--port", "80"]
