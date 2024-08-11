@@ -10,21 +10,20 @@ from typing import Annotated
 import tiktoken
 
 from .log_config import log_config
+from .azure_plugin import AzurePlugin
 
 from semantic_kernel.agents.chat_completion_agent import ChatCompletionAgent
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.utils.author_role import AuthorRole
-from semantic_kernel.filters.filter_types import FilterTypes
-from semantic_kernel.filters.prompts.prompt_render_context import PromptRenderContext
-from semantic_kernel.functions.kernel_function_decorator import kernel_function
+# from semantic_kernel.filters.filter_types import FilterTypes
+# from semantic_kernel.filters.prompts.prompt_render_context import PromptRenderContext
+# from semantic_kernel.functions.kernel_function_decorator import kernel_function
 
 from semantic_kernel.kernel import Kernel
 
 
-from azure.identity import DefaultAzureCredential
-from azure.mgmt.resource import ResourceManagementClient
 
 
 
@@ -36,37 +35,6 @@ def num_tokens_from_string(string: str, encoding_name: str ='cl100k_base') -> in
     encoding = tiktoken.get_encoding(encoding_name)
     num_tokens = len(encoding.encode(string))
     return num_tokens
-
-subscription_id = os.environ.get("AZURE_SUBSCRIPTION_ID")
-class AzurePlugin:
-    """A plugin to interact with Azure resources"""
-
-    @kernel_function(description="look up an Azure resource by tag")
-    def get_resource_by_tag(
-        self, 
-        key: Annotated[str, "The key of the tag of the Azure resource"], 
-        value: Annotated[str, "The value of the tag of the Azure resource"]
-    ) -> Annotated[str, "Returns the list of Azure resources with the tag"]:
-        print(f"System> I am looking up the Azure resources with the tag: {key}: {value}")
-        token_credential = DefaultAzureCredential()
-        resource_client = ResourceManagementClient(token_credential, subscription_id)
-        resource_list = resource_client.resources.list(filter=f"tagName eq '{key}' and tagValue eq '{value}'")
-        #resource_list = resource_client.resources.list_by_resource_group(
-        #    "rg-quackersbank-central", expand = "createdTime,changedTime")
-        list_list = list(resource_list)
-        print(f"System> I found {len(list_list)} resources with the tagName {key} and tagValue {value}")        
-        str_arr = []
-        for resource in list_list:
-            #print(f"System> {resource}")
-            r_dict = {
-                "name": resource.name,
-                "type": resource.type.split("/")[1],
-            }
-            str_arr.append(f"{r_dict}")
-        print(f"System> {str_arr}")
-        return "\n".join(str_arr)
-
-    
 
 # A helper method to invoke the agent with the user input
 async def invoke_agent(agent: ChatCompletionAgent, input: str, chat: ChatHistory, streaming=False) -> any:
@@ -148,8 +116,13 @@ def read_root():
 def echo(data: dict):
     return {"echo": data}
 
-
-
+@app.post("/resetchat")
+async def resetchat():
+    global history
+    history = ChatHistory()
+    history.add_system_message("You are an Azure assistant named Labby. Your goal is to assist in saving money and setting up lab environments.")
+    history.add_system_message("Welcome, I am Labby! How can I help you today?")
+    return {"result": "Chat history has been reset."}
 
 @app.post("/chat")
 async def chat(data: dict):

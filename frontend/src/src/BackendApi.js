@@ -26,6 +26,16 @@ class BackendApi {
         });
         return await resp.json();
     }
+
+    async resetchat(){
+        const resp = await fetch(`${this.baseurl}/resetchat`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        return await resp.json();
+    }
 }
 
 export { BackendApi }

@@ -31,12 +31,18 @@ export default function Chat(props) {
 
     const handleApiCall = async (question) => {
         setApiQuestion('');
-        const response = await api.chat(question);
+        const response = await api.chat(question)
         setThinking(false);
         setMessages([...messages, {"sender": "labby", "message": response.result}]);
         
     }
 
+    const handleResetChat = async (e) => {
+        setMessages([
+            {"sender": "labby", "message": "Welcome, I am Labby! How can I help you today?"}
+        ])
+        const response = await api.resetchat()
+    }
 
     return (
         <div className="chat">
@@ -58,6 +64,7 @@ export default function Chat(props) {
             <textarea placeholder='Ask a question...' onChange={(e)=>{ setQuestion(e.target.value)}} value={question}>
             </textarea>
             <button onClick={handleChatSend}>Send</button>
+            <button onClick={handleResetChat}>Reset</button>
         </div>
     );
 }
