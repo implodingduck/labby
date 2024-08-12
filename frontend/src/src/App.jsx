@@ -1,15 +1,15 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
-import Chat from './Chat'
+import MainContent from './MainContent'
+import { MsalProvider } from '@azure/msal-react';
 
-function App() {
-  const [count, setCount] = useState(0)
+function App({ instance }) {
+  
 
   return (
     <>
-      <Chat />
+      <MsalProvider instance={instance}>
+        <MainContent />
+      </MsalProvider>
     </>
   )
 }

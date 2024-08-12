@@ -229,3 +229,85 @@ resource "azurerm_container_app" "backend" {
     ignore_changes = [ secret ]
   }
 }
+
+resource "azurerm_container_app" "frontend" {
+  name                         = "labby-frontend"
+  container_app_environment_id = azurerm_container_app_environment.this.id
+  resource_group_name          = azurerm_resource_group.rg.name
+  revision_mode                = "Single"
+  workload_profile_name        = "Consumption"
+
+  template {
+    container {
+      name   = "frontend"
+      image  = "ghcr.io/implodingduck/labby-frontend:latest"
+      cpu    = 0.25
+      memory = "0.5Gi"
+
+    
+      env {
+        name = "VITE_CLIENT_ID"
+        secret_name = "vite-client-id"
+      }
+      env {
+        name = "VITE_TENANT_ID"
+        secret_name = "vite-tenant-id"
+      }
+      env {
+        name = "VITE_BASE_URL"
+        value = azurerm_container_app.backend.ingress[0].external_fqdn
+      }
+      env {
+        name = "VITE_BACKEND_CLIENT_ID"
+        secret_name = "vite-backend-client-id"
+      }
+
+    }
+    http_scale_rule {
+      name                = "http-1"
+      concurrent_requests = "100"
+    }
+    min_replicas = 0
+    max_replicas = 1
+  }
+
+  ingress {
+    allow_insecure_connections = false
+    external_enabled           = true
+    target_port                = 80
+    transport                  = "http"
+    traffic_weight {
+      latest_revision = true
+      percentage      = 100
+    }
+  }
+
+
+  secret {
+    name = "vite-client-id"
+    identity = azurerm_user_assigned_identity.this.id
+    key_vault_secret_id = "${azurerm_key_vault.kv.vault_uri}secrets/VITE-CLIENT-ID"
+  }
+
+  secret {
+    name = "vite-tenant-id"
+    identity = azurerm_user_assigned_identity.this.id
+    key_vault_secret_id = "${azurerm_key_vault.kv.vault_uri}secrets/VITE-TENANT-ID"
+  }
+  secret {
+    name = "vite-backend-client-id"
+    identity = azurerm_user_assigned_identity.this.id
+    key_vault_secret_id = "${azurerm_key_vault.kv.vault_uri}secrets/VITE-BACKEND-CLIENT-ID"
+  }
+  
+
+  identity {
+    type = "UserAssigned"
+    identity_ids = [azurerm_user_assigned_identity.this.id]
+  }
+  tags = local.tags
+
+  lifecycle {
+    ignore_changes = [ secret ]
+  }
+}
