@@ -1,5 +1,5 @@
 from logging.config import dictConfig
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 import asyncio
 import os 
@@ -115,6 +115,10 @@ def read_root():
 @app.post("/echo")
 def echo(data: dict):
     return {"echo": data}
+
+@app.get("/me")
+def me(request: Request):
+    return {"headers": request.headers}
 
 @app.post("/resetchat")
 async def resetchat():

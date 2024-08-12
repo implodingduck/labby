@@ -74,6 +74,35 @@ resource "azurerm_subnet" "cluster" {
 
 }
 
+resource "azurerm_user_assigned_identity" "this" {
+  location            = azurerm_resource_group.rg.location
+  name                = "uai-${local.cluster_name}"
+  resource_group_name = azurerm_resource_group.rg.name
+}
+
+resource "azurerm_key_vault" "kv" {
+  name                       = "kv-${local.cluster_name}"
+  location                   = azurerm_resource_group.rg.location
+  resource_group_name        = azurerm_resource_group.rg.name
+  tenant_id                  = data.azurerm_client_config.current.tenant_id
+  sku_name                   = "standard"
+  soft_delete_retention_days = 7
+  purge_protection_enabled   = false
+  enable_rbac_authorization = true
+}
+
+resource "azurerm_role_assignment" "containerapptokv" {
+  scope                = azurerm_key_vault.kv.id
+  role_definition_name = "Key Vault Secrets User"
+  principal_id         = azurerm_user_assigned_identity.this.principal_id
+}
+
+resource "azurerm_role_assignment" "reader" {
+  scope                = "/subscriptions/${data.azurerm_client_config.current.subscription_id}"
+  role_definition_name = "Reader"
+  principal_id         = azurerm_user_assigned_identity.this.principal_id
+}
+
 resource "azurerm_container_app_environment" "this" {
   name                       = "ace-${local.cluster_name}"
   location                   = azurerm_resource_group.rg.location
@@ -81,11 +110,122 @@ resource "azurerm_container_app_environment" "this" {
   log_analytics_workspace_id = data.azurerm_log_analytics_workspace.default.id
 
   infrastructure_subnet_id = azurerm_subnet.cluster.id
+
   workload_profile {
-    name = "Consumption"
+    name                  = "Consumption"
     workload_profile_type = "Consumption"
-    minimum_count = 1
-    maximum_count = 1
   }
+
+  tags = local.tags
+
 }
 
+resource "azurerm_container_app" "backend" {
+  name                         = "labby-backend"
+  container_app_environment_id = azurerm_container_app_environment.this.id
+  resource_group_name          = azurerm_resource_group.rg.name
+  revision_mode                = "Single"
+  workload_profile_name        = "Consumption"
+
+  template {
+    container {
+      name   = "backend"
+      image  = "ghcr.io/implodingduck/labby-backend:latest"
+      cpu    = 0.25
+      memory = "0.5Gi"
+
+      env {
+        name  = "AZURE_SUBSCRIPTION_ID"
+        value = data.azurerm_client_config.current.subscription_id
+      }
+      env {
+        name  = "AZURE_TENANT_ID"
+        value = data.azurerm_client_config.current.tenant_id
+
+      }
+      env {
+        name  = "AZURE_CLIENT_ID"
+        value = azurerm_user_assigned_identity.this.client_id
+      }
+      env {
+        name = "AZURE_OPENAI_API_KEY"
+        secret_name = "azure-openai-api-key"
+      }
+      env {
+        name = "AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"
+        secret_name = "azure-openai-chat-deployment-name"
+      }
+      env {
+        name = "AZURE_OPENAI_ENDPOINT"
+        secret_name = "azure-openai-endpoint"
+      }
+      env {
+        name = "AZURE_OPENAI_TEXT_DEPLOYMENT_NAME"
+        secret_name = "azure-openai-text-deployment-name"
+      }
+      env {
+        name = "GLOBAL_LLM_SERVICE"
+        secret_name = "global-llm-service"
+      }
+    }
+    http_scale_rule {
+      name                = "http-1"
+      concurrent_requests = "100"
+    }
+    min_replicas = 0
+    max_replicas = 1
+  }
+
+  ingress {
+    allow_insecure_connections = false
+    external_enabled           = true
+    target_port                = 80
+    transport                  = "http"
+    traffic_weight {
+      latest_revision = true
+      percentage      = 100
+    }
+  }
+
+  secret {
+    name = "microsoft-provider-authentication-secret"
+    identity = azurerm_user_assigned_identity.this.id
+    key_vault_secret_id = "${azurerm_key_vault.kv.vault_uri}secrets/CLIENT-SECRET"
+  }
+  secret {
+    name = "azure-openai-api-key"
+    identity = azurerm_user_assigned_identity.this.id
+    key_vault_secret_id = "${azurerm_key_vault.kv.vault_uri}secrets/AZURE-OPENAI-API-KEY"
+  }
+
+  secret {
+    name = "azure-openai-chat-deployment-name"
+    identity = azurerm_user_assigned_identity.this.id
+    key_vault_secret_id = "${azurerm_key_vault.kv.vault_uri}secrets/AZURE-OPENAI-CHAT-DEPLOYMENT-NAME"
+  }
+  secret {
+    name = "azure-openai-endpoint"
+    identity = azurerm_user_assigned_identity.this.id
+    key_vault_secret_id = "${azurerm_key_vault.kv.vault_uri}secrets/AZURE-OPENAI-ENDPOINT"
+  }
+  secret {
+    name = "azure-openai-text-deployment-name"
+    identity = azurerm_user_assigned_identity.this.id
+    key_vault_secret_id = "${azurerm_key_vault.kv.vault_uri}secrets/AZURE-OPENAI-TEXT-DEPLOYMENT-NAME"
+  }
+  secret {
+    name = "global-llm-service"
+    identity = azurerm_user_assigned_identity.this.id
+    key_vault_secret_id = "${azurerm_key_vault.kv.vault_uri}secrets/GLOBAL-LLM-SERVICE"
+  }   
+
+  identity {
+    type = "UserAssigned"
+    identity_ids = [azurerm_user_assigned_identity.this.id]
+  }
+  tags = local.tags
+
+  lifecycle {
+    ignore_changes = [ secret ]
+  }
+}
