@@ -180,7 +180,7 @@ resource "azurerm_container_app" "backend" {
     allow_insecure_connections = false
     external_enabled           = true
     target_port                = 80
-    transport                  = "http"
+    transport                  = "auto"
     traffic_weight {
       latest_revision = true
       percentage      = 100
@@ -262,7 +262,7 @@ resource "azurerm_container_app" "frontend" {
     allow_insecure_connections = false
     external_enabled           = true
     target_port                = 80
-    transport                  = "http"
+    transport                  = "auto"
     traffic_weight {
       latest_revision = true
       percentage      = 100

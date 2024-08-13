@@ -7,7 +7,7 @@ import ReactMarkdown from 'react-markdown'
 export default function Chat(props) {
 
     const api = new BackendApi();
-    const [question, setQuestion] = useState('Please find all the azure resources with the tag repo: quackers-bank');
+    const [question, setQuestion] = useState('Please find all the azure resources with the tag repo: labby');
     const [apiQuestion, setApiQuestion] = useState('');
     const [thinking, setThinking] = useState(false);
     const [messages, setMessages] = useState([
