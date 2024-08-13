@@ -244,22 +244,9 @@ resource "azurerm_container_app" "frontend" {
       cpu    = 0.25
       memory = "0.5Gi"
 
-    
       env {
-        name = "VITE_CLIENT_ID"
-        secret_name = "vite-client-id"
-      }
-      env {
-        name = "VITE_TENANT_ID"
-        secret_name = "vite-tenant-id"
-      }
-      env {
-        name = "VITE_BASE_URL"
-        value = azurerm_container_app.backend.ingress[0].external_fqdn
-      }
-      env {
-        name = "VITE_BACKEND_CLIENT_ID"
-        secret_name = "vite-backend-client-id"
+        name = "API_ENDPOINT"
+        value = "${azurerm_container_app.backend.ingress[0].fqdn}"
       }
 
     }
@@ -280,24 +267,6 @@ resource "azurerm_container_app" "frontend" {
       latest_revision = true
       percentage      = 100
     }
-  }
-
-
-  secret {
-    name = "vite-client-id"
-    identity = azurerm_user_assigned_identity.this.id
-    key_vault_secret_id = "${azurerm_key_vault.kv.vault_uri}secrets/VITE-CLIENT-ID"
-  }
-
-  secret {
-    name = "vite-tenant-id"
-    identity = azurerm_user_assigned_identity.this.id
-    key_vault_secret_id = "${azurerm_key_vault.kv.vault_uri}secrets/VITE-TENANT-ID"
-  }
-  secret {
-    name = "vite-backend-client-id"
-    identity = azurerm_user_assigned_identity.this.id
-    key_vault_secret_id = "${azurerm_key_vault.kv.vault_uri}secrets/VITE-BACKEND-CLIENT-ID"
   }
   
 

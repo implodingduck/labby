@@ -87,6 +87,11 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           context: ./${{ env.WORKINGDIR }}/
+          build-args: |
+            VITE_CLIENT_ID=${{ secrets.VITE_CLIENT_ID }}
+            VITE_TENANT_ID=${{ secrets.VITE_TENANT_ID }}
+            VITE_BASE_URL=/api
+            VITE_BACKEND_CLIENT_ID=${{ secrets.VITE_BACKEND_CLIENT_ID }}
 
       # Sign the resulting Docker image digest except on PRs.
       # This will only write to the public Rekor transparency log when the Docker
