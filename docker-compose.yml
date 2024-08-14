@@ -1,17 +1,17 @@
 version: '3.9'
 
 services:
-  db:
-    image: postgres
-    restart: always
-    # set shared memory limit when using docker-compose
-    shm_size: 128mb
-    volumes:
-      - ./postgres:/var/lib/postgresql/data
-    environment:
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    ports:
-      - 5432:5432
+  # db:
+  #   image: postgres
+  #   restart: always
+  #   # set shared memory limit when using docker-compose
+  #   shm_size: 128mb
+  #   volumes:
+  #     - ./postgres:/var/lib/postgresql/data
+  #   environment:
+  #     POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+  #   ports:
+  #     - 5432:5432
 
   backend:
     build: ./backend
@@ -43,3 +43,17 @@ services:
       - 5137:80
     environment:
       API_ENDPOINT: ${API_ENDPOINT}
+
+  teamsbot:
+    build:
+      context: ./teamsbot
+    ports:
+      - 3978:3978
+    environment:
+      AAD_APP_CLIENT_ID: ${AAD_APP_CLIENT_ID}
+      AAD_APP_CLIENT_SECRET: ${AAD_APP_CLIENT_SECRET}
+      AAD_APP_OAUTH_AUTHORITY_HOST: ${AAD_APP_OAUTH_AUTHORITY_HOST}
+      BOT_DOMAIN: ${BOT_DOMAIN}
+      BOT_ID: ${BOT_ID}
+      BOT_PASSWORD: ${BOT_PASSWORD}
+      RUNNING_ON_AZURE: ${RUNNING_ON_AZURE}

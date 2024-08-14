@@ -36,3 +36,5 @@ terraform.rc
 
 .env
 **/postgres/*
+
+**/appPackage/build/*
