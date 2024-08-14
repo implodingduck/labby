@@ -3,21 +3,21 @@
     "version": "1.0.0",
     "manifestVersion": "1.15",
     "id": "${{TEAMS_APP_ID}}",
-    "packageName": "com.package.name",
+    "packageName": "com.implodingduck.labbyteamsbot",
     "name": {
-        "short": "graph-chat-${{TEAMSFX_ENV}}",
-        "full": "Graph Chat Bot"
+        "short": "labby-teamsbot",
+        "full": "Labby Teams Bot"
     },
     "developer": {
         "name": "Implodingduck Labs",
         "mpnId": "",
-        "websiteUrl": "https://github.com/implodingduck/copilot-plugin",
-        "privacyUrl": "https://github.com/implodingduck/copilot-plugin",
-        "termsOfUseUrl": "https://github.com/implodingduck/copilot-plugin"
+        "websiteUrl": "https://github.com/implodingduck/labby",
+        "privacyUrl": "https://github.com/implodingduck/labby",
+        "termsOfUseUrl": "https://github.com/implodingduck/labby"
     },
     "description": {
-        "short": "Sample bot that repeats back what you say",
-        "full": "Sample bot that repeats back what you say"
+        "short": "Teamsbot that interacts with the Labby API",
+        "full": "Teamsbot that interacts with the Labby API"
     },
     "icons": {
         "outline": "outline.png",
