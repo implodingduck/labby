@@ -280,3 +280,120 @@ resource "azurerm_container_app" "frontend" {
     ignore_changes = [ secret ]
   }
 }
+
+
+resource "azurerm_container_app" "teamsbot" {
+  name                         = "labby-teamsbot"
+  container_app_environment_id = azurerm_container_app_environment.this.id
+  resource_group_name          = azurerm_resource_group.rg.name
+  revision_mode                = "Single"
+  workload_profile_name        = "Consumption"
+
+  template {
+    container {
+      name   = "teamsbot"
+      image  = "ghcr.io/implodingduck/labby-teamsbot:latest"
+      cpu    = 0.25
+      memory = "0.5Gi"
+      env {
+        name = "AAD_APP_CLIENT_ID"
+        secret_name = "aad-app-client-id"
+      }
+      env {
+        name = "AAD_APP_CLIENT_SECRET"
+        secret_name = "aad-app-client-secret"
+      }
+
+      env {
+        name = "AAD_APP_TENANT_ID"
+        secret_name = "aad-app-tenant-id"
+      }
+
+      env {
+        name = "BOT_DOMAIN"
+        secret_name = "bot-domain"
+      }
+
+      env {
+        name = "BOT_ID"
+        secret_name = "bot-id"
+      }
+
+      env {
+        name = "BOT_PASSWORD"
+        secret_name = "bot-password"
+      }
+
+      env {
+        name = "AAD_APP_OAUTH_AUTHORITY_HOST"
+        value = "https://login.microsoftonline.com"
+      }
+
+      env {
+        name = "RUNNING_ON_AZURE"
+        value = "1"
+      }
+      
+     
+    }
+    http_scale_rule {
+      name                = "http-1"
+      concurrent_requests = "100"
+    }
+    min_replicas = 0
+    max_replicas = 1
+  }
+
+  ingress {
+    allow_insecure_connections = false
+    external_enabled           = true
+    target_port                = 3978
+    transport                  = "auto"
+    traffic_weight {
+      latest_revision = true
+      percentage      = 100
+    }
+  }
+
+  secret {
+    name = "aad-app-client-id"
+    identity = azurerm_user_assigned_identity.this.id
+    key_vault_secret_id = "${azurerm_key_vault.kv.vault_uri}secrets/AAD-APP-CLIENT-ID"
+  }
+  secret {
+    name = "aad-app-client-secret"
+    identity = azurerm_user_assigned_identity.this.id
+    key_vault_secret_id = "${azurerm_key_vault.kv.vault_uri}secrets/AAD-APP-CLIENT-SECRET"
+  }
+
+  secret {
+    name = "aad-app-tenant-id"
+    identity = azurerm_user_assigned_identity.this.id
+    key_vault_secret_id = "${azurerm_key_vault.kv.vault_uri}secrets/AAD-APP-TENANT-ID"
+  }
+  secret {
+    name = "bot-domain"
+    identity = azurerm_user_assigned_identity.this.id
+    key_vault_secret_id = "${azurerm_key_vault.kv.vault_uri}secrets/BOT-DOMAIN"
+  }
+  secret {
+    name = "bot-id"
+    identity = azurerm_user_assigned_identity.this.id
+    key_vault_secret_id = "${azurerm_key_vault.kv.vault_uri}secrets/BOT-ID"
+  }
+  secret {
+    name = "bot-password"
+    identity = azurerm_user_assigned_identity.this.id
+    key_vault_secret_id = "${azurerm_key_vault.kv.vault_uri}secrets/BOT-PASSWORD"
+  }   
+
+  identity {
+    type = "UserAssigned"
+    identity_ids = [azurerm_user_assigned_identity.this.id]
+  }
+  tags = local.tags
+
+  lifecycle {
+    ignore_changes = [ secret ]
+  }
+}
