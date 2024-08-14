@@ -20,6 +20,8 @@ import { createProfileCard, createSearchResultsCard } from './cards';
 const ENV_FILE = path.join(__dirname, '..', '.env');
 config({ path: ENV_FILE });
 
+const baseurl = process.env.BASE_URL;
+
 // Create adapter.
 // See https://aka.ms/about-bot-adapter to learn more about how bots work.
 const adapter = new TeamsAdapter(
@@ -130,27 +132,38 @@ app.activity(ActivityTypes.Message, async (context: TurnContext, state: Applicat
         Authorization: `Bearer ${state.temp.authTokens['graph']}`,
         'Content-Type': 'application/json'
     }
-    const searchBody = {
-        "requests": [
-            {
-                "entityTypes": [
-                    "driveItem", "listItem", "list", "site", "drive"
-                ],
-                "query": {
-                    "queryString": `${context.activity.text}`
-                }
-            }
-        ],
+    // const searchBody = {
+    //     "requests": [
+    //         {
+    //             "entityTypes": [
+    //                 "driveItem", "listItem", "list", "site", "drive"
+    //             ],
+    //             "query": {
+    //                 "queryString": `${context.activity.text}`
+    //             }
+    //         }
+    //     ],
+    // }
+    // const resp = await fetch('https://graph.microsoft.com/v1.0/search/query', {
+    //     method: 'POST',
+    //     headers,
+    //     body: JSON.stringify(searchBody)
+    // });
+    // const respjson = await resp.json();
+    // const searchCard = createSearchResultsCard(respjson);
+    
+    // await context.sendActivity({ attachments: [searchCard] });
+    const body = {
+        "question": `${context.activity.text}`
     }
-    const resp = await fetch('https://graph.microsoft.com/v1.0/search/query', {
+
+    const resp = await fetch(`${baseurl}/chat`, {
         method: 'POST',
         headers,
-        body: JSON.stringify(searchBody)
+        body: JSON.stringify(body)
     });
     const respjson = await resp.json();
-    const searchCard = createSearchResultsCard(respjson);
-    
-    await context.sendActivity({ attachments: [searchCard] });
+    await context.sendActivity(respjson.result);
 });
 
 app.authentication.get('graph').onUserSignInSuccess(async (context: TurnContext, state: ApplicationTurnState) => {
