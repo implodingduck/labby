@@ -338,6 +338,11 @@ resource "azurerm_container_app" "teamsbot" {
         name = "RUNNING_ON_AZURE"
         value = "1"
       }
+
+      env {
+        name = "BASE_URL"
+        value = "https://${azurerm_container_app.backend.ingress[0].fqdn}"
+      }
       
      
     }

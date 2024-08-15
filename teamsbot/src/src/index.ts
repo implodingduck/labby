@@ -158,12 +158,15 @@ app.activity(ActivityTypes.Message, async (context: TurnContext, state: Applicat
         "question": `${context.activity.text}`
     }
 
+    console.log(`Attempting to fetch ${baseurl}/chat`);
+    console.log(`Headers: ${JSON.stringify(headers)}`);
     const resp = await fetch(`${baseurl}/chat`, {
         method: 'POST',
         headers,
         body: JSON.stringify(body)
     });
     const respjson = await resp.json();
+    console.log(`Response: (${resp.status}) ${respjson}`);
     await context.sendActivity(respjson.result);
 });
 
