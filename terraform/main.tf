@@ -172,7 +172,7 @@ resource "azurerm_container_app" "backend" {
       name                = "http-1"
       concurrent_requests = "100"
     }
-    min_replicas = 0
+    min_replicas = 1
     max_replicas = 1
   }
 
@@ -254,7 +254,7 @@ resource "azurerm_container_app" "frontend" {
       name                = "http-1"
       concurrent_requests = "100"
     }
-    min_replicas = 0
+    min_replicas = 1
     max_replicas = 1
   }
 
@@ -345,7 +345,7 @@ resource "azurerm_container_app" "teamsbot" {
       name                = "http-1"
       concurrent_requests = "100"
     }
-    min_replicas = 0
+    min_replicas = 1
     max_replicas = 1
   }
 
