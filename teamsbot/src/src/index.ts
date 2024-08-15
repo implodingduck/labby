@@ -78,7 +78,7 @@ const app = new ApplicationBuilder<ApplicationTurnState>()
     .withAuthentication(adapter, {
         settings: {
             graph: {
-                scopes: ['User.Read', "Files.Read.All", "Sites.Read.All"],
+                scopes: ['User.Read', `api://${process.env.BACKEND_CLIENT_ID}/Apis.Chat`],
                 msalConfig: {
                     auth: {
                         clientId: process.env.AAD_APP_CLIENT_ID!,

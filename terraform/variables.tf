@@ -28,3 +28,10 @@ variable "location" {
 variable "gh_repo" {
   type = string
 }
+variable "bot_id" {
+  type = string
+}
+
+variable "bot_tenant_id" {
+  type = string
+}

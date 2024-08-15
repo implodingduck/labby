@@ -325,6 +325,11 @@ resource "azurerm_container_app" "teamsbot" {
       }
 
       env {
+        name = "BACKEND_CLIENT_ID"
+        secret_name = "backend-client-id"
+      }
+
+      env {
         name = "AAD_APP_OAUTH_AUTHORITY_HOST"
         value = "https://login.microsoftonline.com"
       }
@@ -385,6 +390,12 @@ resource "azurerm_container_app" "teamsbot" {
     name = "bot-password"
     identity = azurerm_user_assigned_identity.this.id
     key_vault_secret_id = "${azurerm_key_vault.kv.vault_uri}secrets/BOT-PASSWORD"
+  }
+
+  secret {
+    name = "backend-client-id"
+    identity = azurerm_user_assigned_identity.this.id
+    key_vault_secret_id = "${azurerm_key_vault.kv.vault_uri}secrets/VITE-BACKEND-CLIENT-ID"
   }   
 
   identity {
@@ -396,4 +407,32 @@ resource "azurerm_container_app" "teamsbot" {
   lifecycle {
     ignore_changes = [ secret ]
   }
+}
+
+
+resource "azapi_resource" "teamsbot" {
+  type = "Microsoft.BotService/botServices@2022-09-15"
+  name = "labby-teamsbot-bot"
+  location = "global"
+  parent_id = azurerm_resource_group.rg.id
+  tags = local.tags
+  body = jsonencode({
+    properties = {
+      displayName = "labby-teamsbot-bot"
+      endpoint = "https://${azurerm_container_app.teamsbot.ingress[0].fqdn}/api/messages"
+      msaAppId = var.bot_id
+      msaAppTenantId = var.bot_tenant_id
+      msaAppType = "SingleTenant"
+    }
+    sku = {
+      name = "F0"
+    }
+    kind = "azurebot"
+  })
+}
+
+resource "azurerm_bot_channel_ms_teams" "this" {
+  bot_name            = "labby-teamsbot-bot"
+  location            = "global"
+  resource_group_name = azurerm_resource_group.rg.name
 }
