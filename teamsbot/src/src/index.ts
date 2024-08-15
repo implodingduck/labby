@@ -98,7 +98,15 @@ const app = new ApplicationBuilder<ApplicationTurnState>()
 // Listen for user to say '/reset' and then delete conversation state
 app.message('/reset', async (context: TurnContext, state: ApplicationTurnState) => {
     state.deleteConversationState();
-    await context.sendActivity(`Ok I've deleted the current conversation state.`);
+    const headers = {
+        Authorization: `Bearer ${state.temp.authTokens['graph']}`,
+        'Content-Type': 'application/json'
+    }
+    const resp = await fetch(`${baseurl}/resetchat`, {
+        method: 'POST',
+        headers
+    });
+    await context.sendActivity(`Ok I've deleted the current conversation state. (${resp.status})`);
 });
 
 app.message('/signout', async (context: TurnContext, state: ApplicationTurnState) => {
