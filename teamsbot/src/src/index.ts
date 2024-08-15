@@ -29,7 +29,8 @@ const adapter = new TeamsAdapter(
     new ConfigurationServiceClientCredentialFactory({
         MicrosoftAppId: process.env.BOT_ID,
         MicrosoftAppPassword: process.env.BOT_PASSWORD,
-        MicrosoftAppType: 'MultiTenant'
+        MicrosoftAppType: 'SingleTenant',
+        MicrosoftAppTenantId: process.env.AAD_APP_TENANT_ID
     })
 );
 
