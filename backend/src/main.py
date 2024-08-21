@@ -37,7 +37,7 @@ def num_tokens_from_string(string: str, encoding_name: str ='cl100k_base') -> in
     num_tokens = len(encoding.encode(string))
     return num_tokens
 
-token_limit = os.environ.get("TOKEN_LIMIT", 2048)
+token_limit = int(os.environ.get("TOKEN_LIMIT", 2048))
 
 # A helper method to invoke the agent with the user input
 async def invoke_agent(agent: ChatCompletionAgent, input: str, chat: ChatHistory, streaming=False) -> any:
