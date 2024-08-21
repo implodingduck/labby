@@ -167,6 +167,10 @@ resource "azurerm_container_app" "backend" {
         name = "GLOBAL_LLM_SERVICE"
         secret_name = "global-llm-service"
       }
+      env {
+        name = "TOKEN_LIMIT"
+        value = "8192"
+      }
     }
     http_scale_rule {
       name                = "http-1"
@@ -343,10 +347,7 @@ resource "azurerm_container_app" "teamsbot" {
         name = "BASE_URL"
         value = "https://${azurerm_container_app.backend.ingress[0].fqdn}"
       }
-      env {
-        name = "TOKEN_LIMIT"
-        value = "8192"
-      }
+      
      
     }
     http_scale_rule {
