@@ -2,7 +2,9 @@ import './Chat.css'
 import React, {useEffect, useState} from 'react';
 import {BackendApi} from './BackendApi';
 
-import ReactMarkdown from 'react-markdown'
+import Markdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
+
 
 export default function Chat(props) {
 
@@ -50,14 +52,14 @@ export default function Chat(props) {
                 {messages.map((message, i) => {
                     return (
                         <div key={i} className={`message ${message.sender}`}>
-                            <ReactMarkdown children={message.message} />
+                            <Markdown remarkPlugins={[remarkGfm]}>{message.message}</Markdown>
                         </div>
                     )
                 }
                 )}
                 {
                     (thinking) ? (<div className='message labby'>
-                        <ReactMarkdown children='Thinking...' />
+                        <Markdown remarkPlugins={[remarkGfm]}>Thinking...</Markdown>
                     </div>) : ''
                 }
             </div>

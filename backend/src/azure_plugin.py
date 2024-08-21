@@ -5,6 +5,7 @@ from semantic_kernel.functions.kernel_function_decorator import kernel_function
 
 from azure.identity import DefaultAzureCredential
 from azure.mgmt.resource import ResourceManagementClient
+from azure.mgmt.costmanagement import CostManagementClient
 
 subscription_id = os.environ.get("AZURE_SUBSCRIPTION_ID")
 class AzurePlugin:
@@ -110,3 +111,33 @@ class AzurePlugin:
             str_arr.append(f"{r_dict}")
         print(f"System> {str_arr}")
         return "\n".join(str_arr)
+    
+    @kernel_function(description="find the cost views of an Azure resource scope")
+    def get_views_by_scope(self, scope: Annotated[str, "The scope of the Azure resource"]) -> Annotated[str, "Returns the cost views of the Azure resource scope"]:
+        print(f"System> I am looking up the cost of the Azure resource scope: {scope}")
+        token_credential = DefaultAzureCredential()
+        cost_client = CostManagementClient(token_credential)
+        parameters = {
+            "dataset": {
+                "aggregation": {"totalCost": {"function": "Sum", "name": "PreTaxCost"}},
+                "granularity": "Daily",
+                "grouping": [{"name": "ResourceType", "type": "Dimension"}],
+            },
+            "timeframe": "MonthToDate",
+            "type": "Usage",
+        }
+        usage = cost_client.query.usage(scope, parameters=parameters)
+        print(usage)
+        md_table = "| "
+        for column in usage.columns:
+            md_table += f"{column.name} | "
+        md_table += "\n| "
+        for column in usage.columns:
+            md_table += f" --- | "
+        
+        for row in usage.rows:
+            md_table += "\n| "
+            for value in row:
+                md_table += f"{value} | "
+        md_table += "\n"
+        return md_table

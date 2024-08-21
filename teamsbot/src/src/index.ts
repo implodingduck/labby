@@ -119,6 +119,20 @@ app.message('/signout', async (context: TurnContext, state: ApplicationTurnState
 app.message('/me', async (context: TurnContext, state: ApplicationTurnState) => {
     console.log("Return who is logged in")
     //console.log(state.temp.authTokens['graph']);
+    console.log(`Attempting to fetch ${baseurl}/me`);
+    const resp = await fetch(`${baseurl}/me`, { 
+        headers: { 
+            Authorization: `Bearer ${state.temp.authTokens['graph']}`
+        }
+    });
+    const respjson = await resp.json();
+    console.log(`Response: (${resp.status}) ${respjson}`);
+    await context.sendActivity(JSON.stringify(respjson));
+});
+
+app.message('/graphme', async (context: TurnContext, state: ApplicationTurnState) => {
+    console.log("Return who is logged in")
+    //console.log(state.temp.authTokens['graph']);
 
     const resp = await fetch('https://graph.microsoft.com/v1.0/me', { 
         headers: { 
@@ -141,33 +155,13 @@ app.activity(ActivityTypes.Message, async (context: TurnContext, state: Applicat
         Authorization: `Bearer ${state.temp.authTokens['graph']}`,
         'Content-Type': 'application/json'
     }
-    // const searchBody = {
-    //     "requests": [
-    //         {
-    //             "entityTypes": [
-    //                 "driveItem", "listItem", "list", "site", "drive"
-    //             ],
-    //             "query": {
-    //                 "queryString": `${context.activity.text}`
-    //             }
-    //         }
-    //     ],
-    // }
-    // const resp = await fetch('https://graph.microsoft.com/v1.0/search/query', {
-    //     method: 'POST',
-    //     headers,
-    //     body: JSON.stringify(searchBody)
-    // });
-    // const respjson = await resp.json();
-    // const searchCard = createSearchResultsCard(respjson);
-    
-    // await context.sendActivity({ attachments: [searchCard] });
+
     const body = {
         "question": `${context.activity.text}`
     }
 
     console.log(`Attempting to fetch ${baseurl}/chat`);
-    console.log(`Headers: ${JSON.stringify(headers)}`);
+    
     const resp = await fetch(`${baseurl}/chat`, {
         method: 'POST',
         headers,

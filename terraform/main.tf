@@ -343,7 +343,10 @@ resource "azurerm_container_app" "teamsbot" {
         name = "BASE_URL"
         value = "https://${azurerm_container_app.backend.ingress[0].fqdn}"
       }
-      
+      env {
+        name = "TOKEN_LIMIT"
+        value = "8192"
+      }
      
     }
     http_scale_rule {
