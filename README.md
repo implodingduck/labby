@@ -8,6 +8,10 @@ A sample copilot using Semantic Kernel to interact with the Azure resource manag
 
 ![custom-copilot-arch.png](custom-copilot-arch.png)
 
-## Deploying
+## Running Locally
+Copy env.sample to .env and populate the values.
 
+Then run `./docker-stuff.sh`
+
+## Deploying
 See terraform directory
