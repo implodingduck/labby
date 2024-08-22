@@ -1,3 +1,5 @@
+# Moved to [https://github.com/scallighan/labby](https://github.com/scallighan/labby)
+
 # labby
 
 ![labby-64.png](labby-64.png)
